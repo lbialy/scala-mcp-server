@@ -1,0 +1,26 @@
+{
+  "name": "scala-mcp-server",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server in TS for Scala command (compile, test)",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && chmod +x index.js"
+  },
+  "keywords": [
+    "scala",
+    "mcp"
+  ],
+  "author": "Łukasz Biały",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.1",
+    "@types/node": "^22.13.0",
+    "axios": "^1.7.9",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
