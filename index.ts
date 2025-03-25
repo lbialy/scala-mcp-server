@@ -1,4 +1,4 @@
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { spawn } from "child_process";
 import { z } from "zod";
@@ -13,11 +13,16 @@ const GlobSearchSchema = z.object({
 
 const TypedGlobSearchSchema = z.object({
   query: z.string(),
-  symbolType: z.enum(["package", "case class", "object", "function"])
+  symbolType: z.array(z.enum(["package", "class", "object", "function", "method", "trait"]))
 });
 
 const FQCNSchema = z.object({
   fqcn: z.string()
+});
+
+const InspectSchema = z.object({
+  fqcn: z.string(),
+  inspectMembers: z.boolean().optional()
 });
 
 // Get project path from command line args
@@ -140,11 +145,14 @@ server.tool(
   TypedGlobSearchSchema.shape,
   async (params, extra) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/typed-glob-search`, {
+      const response = await axios.get(`${API_BASE_URL}/glob-search`, {
         params: {
           query: params.query,
           symbolType: params.symbolType
-        }
+        },
+        paramsSerializer: {
+          indexes: null,
+        }      
       });
       return {
         content: [{
@@ -164,11 +172,14 @@ server.tool(
 // Add inspect tool
 server.tool(
   "inspect",
-  FQCNSchema.shape,
+  InspectSchema.shape,
   async (params, extra) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/inspect`, {
-        params: { fqcn: params.fqcn }
+        params: {
+          fqcn: params.fqcn,
+          inspectMembers: params.inspectMembers || false
+        }
       });
       return {
         content: [{

@@ -10,10 +10,14 @@ const GlobSearchSchema = z.object({
 });
 const TypedGlobSearchSchema = z.object({
     query: z.string(),
-    symbolType: z.enum(["package", "case class", "object", "function"])
+    symbolType: z.array(z.enum(["package", "class", "object", "function", "method", "trait"]))
 });
 const FQCNSchema = z.object({
     fqcn: z.string()
+});
+const InspectSchema = z.object({
+    fqcn: z.string(),
+    inspectMembers: z.boolean().optional()
 });
 // Get project path from command line args
 const projectPath = process.argv[2];
@@ -110,10 +114,13 @@ server.tool("glob-search", GlobSearchSchema.shape, async (params, extra) => {
 server.tool("typed-glob-search", TypedGlobSearchSchema.shape, async (params, extra) => {
     var _a;
     try {
-        const response = await axios.get(`${API_BASE_URL}/typed-glob-search`, {
+        const response = await axios.get(`${API_BASE_URL}/glob-search`, {
             params: {
                 query: params.query,
                 symbolType: params.symbolType
+            },
+            paramsSerializer: {
+                indexes: null,
             }
         });
         return {
@@ -131,11 +138,14 @@ server.tool("typed-glob-search", TypedGlobSearchSchema.shape, async (params, ext
     }
 });
 // Add inspect tool
-server.tool("inspect", FQCNSchema.shape, async (params, extra) => {
+server.tool("inspect", InspectSchema.shape, async (params, extra) => {
     var _a;
     try {
         const response = await axios.get(`${API_BASE_URL}/inspect`, {
-            params: { fqcn: params.fqcn }
+            params: {
+                fqcn: params.fqcn,
+                inspectMembers: params.inspectMembers || false
+            }
         });
         return {
             content: [{
